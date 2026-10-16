@@ -17,7 +17,7 @@ from openai import OpenAI, APIError
 MODEL = os.getenv('OPENAI_MODEL', 'gpt-6-luna')
 
 # LLMへの指示。one_shot.py と chat.py で同じ指示にして、違いを「履歴の有無」だけにする。
-INSTRUCTIONS = 'あなたは授業の学習を手伝うアシスタントです。日本語で簡潔に答えてください。'
+INSTRUCTIONS = 'あなたの知識レベルは江戸時代後期の百科事典程度です。質問に対して、正確で簡潔な回答をしてください。また、口調も江戸時代の人のようにしてください。'
 
 # 質問できる回数の上限。履歴が長くなりすぎないようにする。
 MAX_TURNS = 10
@@ -71,10 +71,8 @@ def main():
 
         # 1. 今回の質問を履歴に追加する。
         # TODO: 質問を history に追加する。下のコメントを外し、raise の行を消す。
-        # history.append({'role': 'user', 'content': question})
-        raise NotImplementedError('TODO: chat.py の main() で、履歴への追加を完成させる')
+        history.append({'role': 'user', 'content': question})
 
-        # 2. 履歴をまとめて送る。
         try:
             result = ask_with_history(history)
         except ValueError as error:
@@ -85,10 +83,7 @@ def main():
             print('API呼び出しに失敗しました。キー・モデル・利用枠を確認してください。')
             return
 
-        # 3. LLMの回答も履歴に追加する。次の質問のときに一緒に送られる。
-        # TODO: 回答も history に追加する。下のコメントを外す。
-        # （ここを忘れると、LLMは自分が何と答えたかを知らないまま次の質問を受ける）
-        # history.append({'role': 'assistant', 'content': result['answer']})
+        history.append({'role': 'assistant', 'content': result['answer']})
 
         print('回答:', result['answer'])
         print(f"（送った履歴 {len(history) - 1} 件 / 入力 {result['input_tokens']} トークン"
